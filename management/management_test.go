@@ -1,3 +1,5 @@
+// +build integration
+
 package management
 
 import (
@@ -13,12 +15,20 @@ var (
 	clientID     = os.Getenv("AUTH0_CLIENT_ID")
 	clientSecret = os.Getenv("AUTH0_CLIENT_SECRET")
 	debug        = os.Getenv("AUTH0_DEBUG")
+	bearerToken  = os.Getenv("AUTH0_BEARER_TOKEN")
 )
 
 func init() {
 	var err error
-	m, err = New(domain, clientID, clientSecret,
-		WithDebug(debug == "true" || debug == "1" || debug == "on"))
+
+	if bearerToken != "" {
+		m, err = New(domain, WithStaticToken(bearerToken),
+			WithDebug(debug == "true" || debug == "1" || debug == "on"))
+	} else {
+		m, err = New(domain, WithClientCredentials(clientID, clientSecret),
+			WithDebug(debug == "true" || debug == "1" || debug == "on"))
+	}
+
 	if err != nil {
 		panic(err)
 	}
@@ -32,7 +42,7 @@ func TestNew(t *testing.T) {
 		"%2Fexample.com",
 		" a.b.c.example.com",
 	} {
-		_, err := New(domain, "", "")
+		_, err := New(domain)
 		if err == nil {
 			t.Errorf("expected New to fail with domain %q", domain)
 		}

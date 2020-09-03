@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/oauth2"
 	"gopkg.in/auth0.v4/internal/client"
 )
 
@@ -100,7 +102,7 @@ type Management struct {
 
 // New creates a new Auth0 Management client by authenticating using the
 // supplied client id and secret.
-func New(domain, clientID, clientSecret string, options ...apiOption) (*Management, error) {
+func New(domain string, options ...apiOption) (*Management, error) {
 
 	// Ignore the scheme if it was defined in the domain variable. Then prefix
 	// with https as its the only scheme supported by the Auth0 API.
@@ -124,17 +126,15 @@ func New(domain, clientID, clientSecret string, options ...apiOption) (*Manageme
 	}
 
 	for _, option := range options {
-		option(m)
+		if err := option(m); err != nil {
+			return nil, err
+		}
 	}
 
-	oauth2 := client.OAuth2(m.url, clientID, clientSecret)
-
-	_, err = oauth2.Token(m.ctx)
-	if err != nil {
-		return nil, err
+	if m.http == nil {
+		return nil, errors.New("WithClientCredentials or WithStaticToken must be specified")
 	}
 
-	m.http = client.New(m.ctx, oauth2)
 	m.http = client.WrapDebug(m.http, m.debug)
 	m.http = client.WrapUserAgent(m.http, m.userAgent)
 	m.http = client.WrapRateLimit(m.http)
@@ -258,36 +258,59 @@ func (m *Management) delete(uri string) error {
 	return m.request("DELETE", uri, nil)
 }
 
-type apiOption func(*Management)
+type apiOption func(*Management) error
+
+func WithStaticToken(token string) apiOption {
+	return func(m *Management) error {
+		m.http = oauth2.NewClient(m.ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))
+		return nil
+	}
+}
+
+func WithClientCredentials(clientID, clientSecret string) apiOption {
+	return func(m *Management) error {
+		oauth2 := client.OAuth2(m.url, clientID, clientSecret)
+		if _, err := oauth2.Token(m.ctx); err != nil {
+			return err
+		}
+
+		m.http = client.New(m.ctx, oauth2)
+		return nil
+	}
+}
 
 // WithTimeout configures the management client with a request timeout.
 func WithTimeout(t time.Duration) apiOption {
-	return func(m *Management) {
+	return func(m *Management) error {
 		m.timeout = t
+		return nil
 	}
 }
 
 // WithDebug configures the management client to dump http requests and
 // responses to stdout.
 func WithDebug(d bool) apiOption {
-	return func(m *Management) {
+	return func(m *Management) error {
 		m.debug = d
+		return nil
 	}
 }
 
 // WitContext configures the management client to use the provided context
 // instead of the provided one.
 func WithContext(ctx context.Context) apiOption {
-	return func(m *Management) {
+	return func(m *Management) error {
 		m.ctx = ctx
+		return nil
 	}
 }
 
 // WithUserAgent configures the management client to use the provided user agent
 // string instead of the default one.
 func WithUserAgent(userAgent string) apiOption {
-	return func(m *Management) {
+	return func(m *Management) error {
 		m.userAgent = userAgent
+		return nil
 	}
 }
 

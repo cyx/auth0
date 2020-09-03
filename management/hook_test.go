@@ -1,8 +1,11 @@
+// +build integration
+
 package management
 
 import (
-	"gopkg.in/auth0.v4/internal/testing/expect"
 	"testing"
+
+	"gopkg.in/auth0.v4/internal/testing/expect"
 
 	"gopkg.in/auth0.v4"
 )

@@ -1,3 +1,5 @@
+// +build integration
+
 package management_test
 
 import (
@@ -10,23 +12,28 @@ import (
 )
 
 var (
-	domain = os.Getenv("AUTH0_DOMAIN")
-	id     = os.Getenv("AUTH0_CLIENT_ID")
-	secret = os.Getenv("AUTH0_CLIENT_SECRET")
+	domain      = os.Getenv("AUTH0_DOMAIN")
+	id          = os.Getenv("AUTH0_CLIENT_ID")
+	secret      = os.Getenv("AUTH0_CLIENT_SECRET")
+	bearerToken = os.Getenv("AUTH0_BEARER_TOKEN")
 
 	api *management.Management
 )
 
 func init() {
 	var err error
-	api, err = management.New(domain, id, secret)
+	if bearerToken != "" {
+		api, err = management.New(domain, management.WithStaticToken(bearerToken))
+	} else {
+		api, err = management.New(domain, management.WithClientCredentials(id, secret))
+	}
 	if err != nil {
 		panic(err)
 	}
 }
 
 func ExampleNew() {
-	api, err := management.New(domain, id, secret)
+	api, err := management.New(domain, management.WithClientCredentials(id, secret))
 	if err != nil {
 		// handle err
 	}

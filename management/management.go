@@ -23,6 +23,9 @@ import (
 // Management API v2.
 //
 type Management struct {
+	Action        *ActionManager
+	ActionVersion *ActionVersionManager
+
 	// Client manages Auth0 Client (also known as Application) resources.
 	Client *ClientManager
 
@@ -139,6 +142,9 @@ func New(domain string, options ...apiOption) (*Management, error) {
 	m.http = client.WrapUserAgent(m.http, m.userAgent)
 	m.http = client.WrapRateLimit(m.http)
 
+	m.Action = &ActionManager{Management: m}
+	m.ActionVersion = &ActionVersionManager{Management: m}
+
 	m.Client = newClientManager(m)
 	m.ClientGrant = newClientGrantManager(m)
 	m.Connection = newConnectionManager(m)
@@ -193,7 +199,7 @@ func (m *Management) defaults(options []ListOption) []ListOption {
 func (m *Management) request(method, uri string, v interface{}) error {
 
 	var payload bytes.Buffer
-	if v != nil {
+	if method != http.MethodGet && method != http.MethodDelete && v != nil {
 		err := json.NewEncoder(&payload).Encode(v)
 		if err != nil {
 			return err
@@ -227,7 +233,7 @@ func (m *Management) request(method, uri string, v interface{}) error {
 		return newError(res.Body)
 	}
 
-	if res.StatusCode != http.StatusNoContent && res.StatusCode != http.StatusAccepted {
+	if res.StatusCode != http.StatusNoContent {
 		err := json.NewDecoder(res.Body).Decode(v)
 		if err != nil {
 			return err
@@ -239,23 +245,23 @@ func (m *Management) request(method, uri string, v interface{}) error {
 }
 
 func (m *Management) get(uri string, v interface{}) error {
-	return m.request("GET", uri, v)
+	return m.request(http.MethodGet, uri, v)
 }
 
 func (m *Management) post(uri string, v interface{}) error {
-	return m.request("POST", uri, v)
+	return m.request(http.MethodPost, uri, v)
 }
 
 func (m *Management) put(uri string, v interface{}) error {
-	return m.request("PUT", uri, v)
+	return m.request(http.MethodPut, uri, v)
 }
 
 func (m *Management) patch(uri string, v interface{}) error {
-	return m.request("PATCH", uri, v)
+	return m.request(http.MethodPatch, uri, v)
 }
 
 func (m *Management) delete(uri string) error {
-	return m.request("DELETE", uri, nil)
+	return m.request(http.MethodDelete, uri, nil)
 }
 
 type apiOption func(*Management) error

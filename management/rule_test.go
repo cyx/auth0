@@ -5,7 +5,7 @@ package management
 import (
 	"testing"
 
-	"gopkg.in/auth0.v4"
+	"github.com/cyx/auth0"
 )
 
 func TestRule(t *testing.T) {

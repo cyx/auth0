@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"golang.org/x/oauth2"
-	"gopkg.in/auth0.v4/internal/client"
+	"github.com/cyx/auth0/internal/client"
 )
 
 // Management is an Auth0 management client used to interact with the Auth0

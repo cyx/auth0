@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"gopkg.in/auth0.v4"
+	"github.com/cyx/auth0"
 )
 
 func TestEmailTemplate(t *testing.T) {

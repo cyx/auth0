@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"gopkg.in/auth0.v4"
-	"gopkg.in/auth0.v4/management"
+	"github.com/cyx/auth0"
+	"github.com/cyx/auth0/management"
 )
 
 var (

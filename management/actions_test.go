@@ -8,7 +8,7 @@ import (
 
 func TestActions(t *testing.T) {
 	a := &Action{
-		Name: "my-action-7",
+		Name: "my-action-8",
 		SupportedTriggers: []Trigger{
 			{ID: PostLogin, Version: "v1"},
 		},

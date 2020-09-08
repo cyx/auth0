@@ -11,8 +11,8 @@ type Action struct {
 	Name              string    `json:"name,omitempty"`
 	SupportedTriggers []Trigger `json:"supported_triggers,omitempty"`
 
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 
 	// TODO: add required configuration / secrets
 }
@@ -45,8 +45,8 @@ type ActionVersion struct {
 	Status       VersionStatus `json:"status,omitempty"`
 	Number       int           `json:"number,omitempty"`
 
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 
 	// TODO: maybe add errors?
 }
@@ -90,8 +90,11 @@ func (m *ActionManager) Read(id string) (*Action, error) {
 }
 
 func (m *ActionManager) Update(id string, a *Action) error {
-	// We'll get a 400 if we try to send the ID as part of the payload.
+	// We'll get a 400 if we try to send the following parameters as part
+	// of the payload.
 	a.ID = ""
+	a.CreatedAt = nil
+	a.UpdatedAt = nil
 	return m.patch(m.uri("actions", "actions", id), a)
 }
 

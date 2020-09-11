@@ -89,28 +89,28 @@ func TestActions(t *testing.T) {
 		t.Logf("%v\n", v)
 	})
 
-	t.Run("Deploy + Test", func(t *testing.T) {
-		v := &ActionVersion{
-			Runtime: "node12",
-			Code:    `module.exports = function(user, context, cb) { cb(null, user, context) }`,
-			Dependencies: []Dependency{
-				{Name: "lodash", Version: "v4.17.20"},
-			},
-		}
+	// t.Run("Deploy + Test", func(t *testing.T) {
+	// 	v := &ActionVersion{
+	// 		Runtime: "node12",
+	// 		Code:    `module.exports = function(user, context, cb) { cb(null, user, context) }`,
+	// 		Dependencies: []Dependency{
+	// 			{Name: "lodash", Version: "v4.17.20"},
+	// 		},
+	// 	}
 
-		if err := m.ActionVersion.Deploy(a.ID, v); err != nil {
-			t.Error(err)
-		}
+	// 	if err := m.ActionVersion.Deploy(a.ID, v); err != nil {
+	// 		t.Error(err)
+	// 	}
 
-		t.Logf("%v\n", v)
+	// 	t.Logf("%v\\n", v)
 
-		testPayload := Object{"user": struct{}{}, "context": struct{}{}}
-		resultPayload, err := m.ActionVersion.Test(a.ID, v.ID, testPayload)
-		if err != nil {
-			t.Error(err)
-		}
-		t.Logf("%v\n", resultPayload)
-	})
+	// 	testPayload := Object{"user": struct{}{}, "context": struct{}{}}
+	// 	resultPayload, err := m.ActionVersion.Test(a.ID, v.ID, testPayload)
+	// 	if err != nil {
+	// 		t.Error(err)
+	// 	}
+	// 	t.Logf("%v\\n", resultPayload)
+	// })
 
 	t.Run("Delete", func(t *testing.T) {
 		err := m.Action.Delete(a.ID)

@@ -1,7 +1,6 @@
 package management
 
 import (
-	"context"
 	"net/url"
 	"time"
 )
@@ -23,10 +22,8 @@ const (
 	VersionStatusPending  VersionStatus = "pending"
 	VersionStatusRetrying VersionStatus = "retrying"
 	VersionStatusBuilding VersionStatus = "building"
+	VersionStatusPackaged VersionStatus = "packaged"
 	VersionStatusBuilt    VersionStatus = "built"
-
-	// TODO(cyx): maybe get rid of this
-	VersionStatusPromoted VersionStatus = "promoted"
 )
 
 type TriggerID string
@@ -117,43 +114,6 @@ func (m *ActionManager) List(opts ...ListOption) (*ActionList, error) {
 
 type ActionVersionManager struct {
 	*Management
-}
-
-func (m *ActionVersionManager) Deploy(actionID string, v *ActionVersion) error {
-	if err := m.post(m.uri("actions", "actions", actionID, "versions"), v); err != nil {
-		return err
-	}
-
-	// Wait up to 1 minute for deploying an action version.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-
-		case <-ticker.C:
-			got, err := m.Read(actionID, v.ID)
-			if err != nil {
-				return err
-			}
-
-			if got.Status == VersionStatusBuilt {
-				if _, err := m.Promote(actionID, got.ID); err != nil {
-					return err
-				}
-
-				// Refresh the final representation of this
-				// action version.
-				*v = *got
-				return nil
-			}
-		}
-	}
 }
 
 func (m *ActionVersionManager) Create(actionID string, v *ActionVersion) error {

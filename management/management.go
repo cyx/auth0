@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/oauth2"
 	"github.com/cyx/auth0/internal/client"
+	"golang.org/x/oauth2"
 )
 
 // Management is an Auth0 management client used to interact with the Auth0
@@ -105,7 +105,7 @@ type Management struct {
 
 // New creates a new Auth0 Management client by authenticating using the
 // supplied client id and secret.
-func New(domain string, options ...apiOption) (*Management, error) {
+func New(ctx context.Context, domain string, options ...apiOption) (*Management, error) {
 
 	// Ignore the scheme if it was defined in the domain variable. Then prefix
 	// with https as its the only scheme supported by the Auth0 API.
@@ -125,7 +125,7 @@ func New(domain string, options ...apiOption) (*Management, error) {
 		userAgent: client.UserAgent,
 		timeout:   1 * time.Minute,
 		debug:     false,
-		ctx:       context.Background(),
+		ctx:       ctx,
 	}
 
 	for _, option := range options {
